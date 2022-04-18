@@ -1,0 +1,305 @@
+```cpp
+//冒泡排序，比较每一对相邻的元素，把最大的放在后面，直到最后的元素是最大的数，对剩余左边的元素重复步骤
+//时间平均O(n^2),最差O(n^2)，最好O(n)，空间O(1)，稳定
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        if(nums.size()==0)  return nums;
+        for(int i = 0; i < nums.size() - 1; i++){
+            for(int j = 0; j < nums.size() - 1 - i; j++){
+                if(nums[j] > nums[j+1])
+                    swap(nums[j], nums[j+1]);
+            }
+        }
+        return nums;
+    }
+};
+```
+```cpp
+//选择排序，在无序区里找一个最小的元素跟在有序区的后面。从第一个位置开始，遍历后面的元素选择最小的放到前面
+//时间平均O(n^2),最差O(n^2)，最好O(n^2)，空间O(1)，不稳定
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        if(nums.size()==0)  return nums;
+        for(int i = 0; i < nums.size() - 1; i++){
+            int min = i;
+            for(int j = i + 1; j < nums.size(); j++) {
+                if(nums[min] > nums[j])
+                    min = j;
+            }
+            if(min != i)
+            swap(nums[i], nums[min]);
+        }
+        return nums;
+    }
+};
+```
+```cpp
+//插入排序，从第二个元素开始，将它向左移动，比较，找到正确的位置后开始将后面的元素向左比较
+//时间平均O(n^2),最差O(n^2)，最好O(n)，空间O(1)，稳定
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        if(nums.size()==0)  return nums;
+        for(int i = 1; i<nums.size(); i++){
+            int key = nums[i];
+            int j = i - 1;
+            while (j >= 0 && nums[j] > key) {
+               nums[j + 1] = nums[j]; //比key大的右移
+               j--;
+            }
+            nums[j + 1] = key;
+        }
+        return nums;
+    }
+};
+```
+```cpp
+//希尔排序，在插入排序的基础上选一个增量序列，改变增量序列的大小等间隔排序，运行时间依赖于增量序列的选择，最坏运行时间为N^2
+//时间平均O(n^1.3)，空间O(1)，不稳定
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums){
+        if(nums.size()==0)  return nums;
+        for(int gap = nums.size()/2; gap > 0; gap /= 2){
+            for(int i = gap; i < nums.size(); i++){
+                int tmp = std::move(nums[i]);
+                int j;
+                for(j = i; j >= gap && tmp < nums[j-gap]; j -= gap){
+                    nums[j] = std::move(nums[j-gap]);
+                }
+                nums[j] = std::move(tmp);
+            }
+        }
+        return nums;
+    }
+};
+```
+```cpp
+/*
+一个数组，前半部分是父节点，后半部分是子节点，左子节点的下标是父节点下标的两倍加一，右子节点是左子节点的下一个元素
+从下至上初始化 堆，先从最后一个父节点开始：就是以该父节点为顶点，向下调整，令所有父节点都比子节点大。
+从堆顶把根卸出来放在数组最后面，再从第一个父节点开始 恢复 堆，重复步骤
+*/
+//堆排序：（最大堆）。 从最后一个父节点开始从左向右将数组的元素形成一个最大堆，根节点总是数组第一个元素。https://www.cnblogs.com/chengxiao/p/6129630.html
+//堆的初始化过程为：对于每一个父节点，比较最大子节点和父节点，如果父节点大于子节点则调整完毕，如果父节点小于子节点则交换内容，继续比较子节点和孙节点直到找到正确位置
+//从堆顶把根卸出来放在最后面，再恢复堆，重复步骤
+//时间平均O(nlogn),最差O(nlogn)，最好O(nlogn)，空间O(1)，不稳定
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums){
+        if(nums.size()==0)  return nums;
+        //从最后一个父节点开始，初始化堆
+        for(int i = nums.size() / 2 - 1; i >= 0; i--){   
+            maxHeapify(nums, i, nums.size());
+        }
+        //将第一个元素(最大根节点)和最后一个右子节点交换，再重新排前面的元素
+        for(int j = nums.size() - 1; j > 0; j--){
+            swap(nums[0], nums[j]);
+            maxHeapify(nums, 0, j);  //从i = 0父节点的位置恢复堆
+        }
+        return nums;
+    }
+    //i是当前开始的父节点，n是二叉堆的大小
+    void maxHeapify(vector<int> & nums, int i, int n){  //该函数给根节点（i）找一个合适的位置
+         int leftChild;
+         int tmp;//父节点
+         for(tmp = nums[i]; i * 2 + 1 < n; i = leftChild){
+             leftChild = i * 2 + 1;
+             if(leftChild != n - 1 && nums[leftChild] < nums[leftChild + 1])//注意子节点在数组范围内
+                      leftChild++; //比较两个子节点，找到最大的子节点
+             if(tmp > nums[leftChild])  return; //父节点大于子节点，调整完毕
+             else{
+                 swap(nums[i], nums[leftChild]);//交换父子内容
+                 //i = leftChild，继续比较子节点(tmp)和孙节点
+             }
+         }
+    }
+    //或者
+    void maxHeapfy(vector<int>& nums, int i, int n) {
+        int leftchild = 2 * i + 1;
+        while (leftchild < n) {
+            if (leftchild != n - 1 && nums[leftchild] < nums[leftchild + 1]) 
+                 leftchild++;
+            if (nums[leftchild] < nums[i]) return;
+            else {
+                swap(nums[leftchild], nums[i]);
+                i = leftchild;
+                leftchild = 2 * leftchild + 1;
+            }
+        }
+    }
+};
+```
+```cpp
+//快速排序，在区间中随机挑选一个元素作基准，将小于基准的元素放在基准之前，大于基准的元素放在基准之后，再分别对小数区与大数区进行排序。
+/*
+快速排序思路：
+1. 选取一个数为基准
+2. 将比基准小的数交换到前面，比基准大的数交换到后面
+3. 对左右区间重复第二步，直到各区间只有一个数
+*/
+//时间平均O(nlogn),最差O(n^2)，最好O(nlogn)，空间O(logn)，不稳定
+class Solution {
+public:
+   vector<int> sortArray(vector<int>& nums) {
+     if(nums.size() > 1){
+        vector<int> smaller;
+        vector<int> same;
+        vector<int> larger;
+        int chosenNum = nums[nums.size() / 2];
+        for(auto &i : nums){
+           if(i < chosenNum)
+               smaller.push_back(std::move(i));
+           else if(i > chosenNum)
+               larger.push_back(std::move(i));
+           else  same.push_back(std::move(i));
+        }  
+        sortArray(smaller);
+        sortArray(larger);
+        std::move(begin(smaller), end(smaller), begin(nums));
+        std::move(begin(same), end(same), begin(nums) + smaller.size());
+        std::move(begin(larger), end(larger), end(nums) - larger.size());
+    }
+    return nums;
+   }
+};
+class Solution {
+public:
+   vector<int> sortArray(vector<int>& nums) {
+       if(nums.size() == 0)  return nums;
+       quickSort(nums, 0, nums.size() - 1);
+       return nums;
+   }
+   void quickSort(vector<int>& nums, int start, int end){
+       if(start == end)  return;
+       int index = partition(nums, start, end); //partition的作用：选取nums[end]为基准,比它小的放前面，比它大的放后面，并返回它所在的位置
+       if(index > start)
+           quickSort(nums, start, index-1);
+       if(index < end)
+          quickSort(nums, index+1, end);
+       return;
+   }
+   int partition(vector<int>& nums, int start, int end){
+       //srand((int)time(NULL));
+       //int pivot = rand() % (end - start + 1) + start;
+       //swap(nums[pivot], nums[end]);
+       for(int i = start; i < end; i++){
+           if(nums[i] < nums[end]){        //选取nums[end]为基准，比它小的放它前面，跟在其他比它小的数后面，比它大的不动
+               swap(nums[start],nums[i]);
+               start++;  //start一直都在比基准小的一系列数的后面
+           }
+       }
+       swap(nums[start],nums[end]);
+       return start;
+   }
+   //以nums[start]为基准
+   int partition(vector<int> &nums, int l, int r) {
+        int index = r;
+        for (int i = r; i >= l; i--) {
+            if (nums[i] > nums[l]) {
+               swap(nums[i], nums[index]);
+               index--;
+            }
+        }
+        swap(nums[l], nums[index]);
+        return index;
+    }
+};
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        quicksort(nums, 0, nums.size() - 1);
+        return nums;
+    }
+    void quicksort(vector<int> &nums, int l, int r) {
+        if (l >= r) return;
+        int i = l-1, j = r+1;
+        int x = nums[l];
+        while (i < j) {
+           do i++; while (nums[i] < x);
+           do j--; while (nums[j] > x);
+           if (i < j) swap(nums[i], nums[j]);
+        }
+        quicksort(nums, l, j);
+        quicksort(nums, j + 1, r);
+        return;
+    }
+};
+```
+```cpp
+//归并排序
+// 递归
+// 1. 把一个待排序的数组分解为两个子数组；
+// 2. 对两个子数组进行排序（通过递归地调用自己来实现）;
+// 3. 从两段中逐个选最小的元素移入新数据段的末尾，对两个已经排序的数组进行合并。
+//时间平均O(nlogn),最差O(nlogn)，最好O(nlogn)，空间O(logn)，稳定
+class Solution {
+public:
+   vector<int> sortArray(vector<int>& nums) {
+        if(nums.size() == 0) return nums;
+        mergeSort(nums, 0,  nums.size() - 1);
+        return nums;
+   }
+   void mergeSort(vector<int> &nums, int start, int end){
+        if(start == end)  return;
+        int middle = (start + end) / 2;
+        mergeSort(nums, start, middle);
+        mergeSort(nums, middle+1, end);
+        merge(nums, start, middle, end);
+   }
+   void merge(vector<int> &nums, int start, int middle, int end){
+        int length  = end - start + 1;
+        int* tmp = new int[length]; //临时数组存合并后的有序序列
+        int i = start; //第一个排好的数组：start到middle
+        int j = middle + 1;//第二个排好的数组：middle+1到end
+        int index = 0;
+        while(i <= middle && j <= end){ //两个数组没有都遍历完
+            tmp[index++] = (nums[i] <= nums[j]) ? nums[i++] : nums[j++];
+        }
+        while(i <= middle) //第二个数组遍历完了第一个没有
+            tmp[index++] = nums[i++];
+        while(j <= end)   //第一个数组遍历完了第二个没有
+            tmp[index++] = nums[j++];
+        for(int i = 0; i < length; i++){
+            nums[start + i] = tmp[i];
+        }
+        delete [] tmp;
+   }
+};
+//归并排序
+// 迭代  https://blog.csdn.net/zpznba/article/details/83745205 看示意图
+// 把含有n个元素的数组分成n组，相邻的组不断两两合并，直到合成一个组
+class Solution {
+public:
+   vector<int> sortArray(vector<int>& nums) {
+        if(nums.size() == 0) return nums;
+        for(int step = 1; step <= nums.size(); step <<= 1){
+            for(int i = 0; i + step - 1 < nums.size(); i += 2 * step){
+                merge(nums, i, i + step - 1, min(i + 2 * step - 1, nums.size()-1));
+                //合并数组i到i+step-1和i+step到min（i+2*step-1，nums.size()-1），不足长的也要合并
+            }
+        }
+        return nums;
+   }
+   void merge(vector<int> &nums, int start, int middle, int end){
+        int length  = end - start + 1;
+        int* tmp = new int[length]; //临时数组存合并后的有序序列
+        int i = start; //第一个排好的数组：start到middle
+        int j = middle + 1;//第二个排好的数组：middle+1到end
+        int index = 0;
+        while(i <= middle && j <= end){ //两个数组没有都遍历完
+            tmp[index++] = (nums[i] <= nums[j]) ? nums[i++] : nums[j++];
+        }
+        while(i <= middle) //第二个数组遍历完了第一个没有
+            tmp[index++] = nums[i++];
+        while(j <= end)   //第一个数组遍历完了第二个没有
+            tmp[index++] = nums[j++];
+        for(int i = 0; i < length; i++){
+            nums[start + i] = tmp[i];
+        }
+        delete [] tmp;
+   }
+};
+```
